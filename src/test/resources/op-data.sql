@@ -1,0 +1,10 @@
+insert into sample.data_item (data_name, data_code, data_status) values ('ABC', '0000000123', 'A');
+insert into sample.data_item (data_name, data_code, data_status) values ('DEF', '0000000456', 'A');
+insert into sample.data_item (data_name, data_code, data_status) values ('GHI', '0000000789', 'A');
+insert into sample.data_item (data_name, data_code, data_status) values ('JKL', '0000000123', 'A');
+insert into sample.data_item (data_name, data_code, data_status) values ('MNO', '0000000456', 'A');
+insert into sample.data_item (data_name, data_code, data_status) values ('PQR', '0000000789', 'A');
+insert into sample.data_item (data_name, data_code, data_status) values ('STU', '0000000123', 'A');
+insert into sample.data_item (data_name, data_code, data_status) values ('VWX', '0000000456', 'A');
+insert into sample.data_item (data_name, data_code, data_status) values ('WZ', '0000000789', 'A');
+insert into sample.data_item (data_name, data_code, data_status) values ('XXX', '0000009123', 'A');

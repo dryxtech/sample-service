@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+    <property resource="application.properties" />
+
+    <springProfile name="dev | tst | prd">
+
+        <!-- json configuration to be enabled when the dev, tst, prd profiles are active -->
+        <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <customFields>{"app":"${info.app.name}","app_version":"${info.app.version}"}</customFields>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="consoleAppender"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="default">
+
+        <!-- default profile, no json -->
+        <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{35} - %msg%n</pattern>
+            </encoder>
+        </appender>
+
+        <logger name="com.dryxtech.software" level="DEBUG" additivity="false">
+            <appender-ref ref="consoleAppender" />
+        </logger>
+
+        <root level="INFO">
+            <appender-ref ref="consoleAppender"/>
+        </root>
+    </springProfile>
+
+</configuration>
