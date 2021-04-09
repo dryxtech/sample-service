@@ -3,12 +3,15 @@ package com.dryxtech.software.sample.service;
 import com.dryxtech.software.sample.dao.DataRequestDAO;
 import com.dryxtech.software.sample.model.DataRequest;
 import com.dryxtech.software.sample.model.DataRequestEvent;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PreDestroy;
+import java.util.Collection;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,12 +27,16 @@ public class RequestService {
     private final ExecutorService dataRequestRecorder;
     private final AtomicBoolean recordDataRequest = new AtomicBoolean();
 
-    public RequestService(DataRequestDAO dataRequestDAO) {
+    public RequestService(DataRequestDAO dataRequestDAO, MeterRegistry meterRegistry) {
 
         this.dataRequestDAO = dataRequestDAO;
         this.dataRequestQueue = new ArrayBlockingQueue<>(1000);
         this.dataRequestRecorder = Executors.newSingleThreadExecutor();
         recordDataRequest.set(true);
+
+        Gauge.builder("recordDataRequest.queue", dataRequestQueue, Collection::size)
+                .description("Queue size of completed data request waiting to be recorded")
+                .register(meterRegistry);
 
         this.dataRequestRecorder.execute(() -> {
             try {
