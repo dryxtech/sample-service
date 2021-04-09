@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -38,20 +36,12 @@ public class ApiError {
         this.debugMessage = ex.getLocalizedMessage();
     }
 
-    public void addValidationErrors(List<FieldError> fieldErrors) {
-        fieldErrors.forEach(this::addValidationError);
-    }
-
-    private void addValidationError(FieldError fieldError) {
-        this.addValidationError(
-                fieldError.getObjectName(),
-                fieldError.getField(),
-                fieldError.getRejectedValue(),
-                fieldError.getDefaultMessage());
-    }
-
-    private void addValidationError(String object, String field, Object rejectedValue, String message) {
+    public void addValidationError(String object, String field, Object rejectedValue, String message) {
         addSubError(new ApiValidationError(object, field, rejectedValue, message));
+    }
+
+    public void addValidationError(String object, String message) {
+        addSubError(new ApiValidationError(object, message));
     }
 
     private void addSubError(ApiSubError subError) {
@@ -59,20 +49,6 @@ public class ApiError {
             subErrors = new ArrayList<>();
         }
         subErrors.add(subError);
-    }
-
-    public void addValidationError(List<ObjectError> globalErrors) {
-        globalErrors.forEach(this::addValidationError);
-    }
-
-    private void addValidationError(ObjectError objectError) {
-        this.addValidationError(
-                objectError.getObjectName(),
-                objectError.getDefaultMessage());
-    }
-
-    private void addValidationError(String object, String message) {
-        addSubError(new ApiValidationError(object, message));
     }
 
     public abstract static class ApiSubError {

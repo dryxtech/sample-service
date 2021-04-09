@@ -3,6 +3,8 @@ package com.dryxtech.software.sample.controller;
 import com.dryxtech.software.sample.exception.InvalidSearchException;
 import com.dryxtech.software.sample.model.ApiError;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.MessageSource;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;
@@ -20,6 +22,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import javax.persistence.EntityNotFoundException;
 import javax.validation.ConstraintViolationException;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -33,9 +36,26 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @ControllerAdvice
 public class ControllerExceptionAdvice extends ResponseEntityExceptionHandler {
 
+    private final ApplicationContext applicationContext;
+    private final MessageSource messageSource;
+
+    public ControllerExceptionAdvice(ApplicationContext applicationContext, MessageSource messageSource) {
+        this.applicationContext = applicationContext;
+        this.messageSource = messageSource;
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
+                                                                  HttpHeaders headers, HttpStatus status,
+                                                                  WebRequest request) {
+        String message = messageSource.getMessage("request.json.error", null, Locale.getDefault());
+        log.error(message, ex);
+        return buildResponseEntity(new ApiError(HttpStatus.BAD_REQUEST, message, ex));
+    }
+
     @ExceptionHandler(value = {InvalidSearchException.class})
     protected ResponseEntity<Object> handleInvalidSearchException(InvalidSearchException ex) {
-        String message = "Invalid Search Error";
+        String message = messageSource.getMessage("invalid.search", null, Locale.getDefault());
         log.warn("{}: {}", message, ex.getMessageWithContext());
 
         ApiError apiError = new ApiError(BAD_REQUEST);
@@ -50,69 +70,64 @@ public class ControllerExceptionAdvice extends ResponseEntityExceptionHandler {
         for (Object value : context.values()) {
             if (value instanceof Errors) {
                 Errors errors = (Errors) value;
-                apiError.addValidationErrors(errors.getFieldErrors());
-                apiError.addValidationError(errors.getGlobalErrors());
+
+                errors.getFieldErrors().forEach(fe -> apiError.addValidationError(fe.getObjectName(), fe.getField(),
+                        fe.getRejectedValue(), applicationContext.getMessage(fe, Locale.getDefault())));
+
+                errors.getGlobalErrors().forEach(oe -> apiError.addValidationError(oe.getObjectName(),
+                        applicationContext.getMessage(oe, Locale.getDefault())));
             }
         }
 
         return buildResponseEntity(apiError);
     }
 
-    private ResponseEntity<Object> buildResponseEntity(ApiError apiError) {
-        return new ResponseEntity<>(apiError, apiError.getStatus());
-    }
-
     @ExceptionHandler(value = {IllegalArgumentException.class})
     protected ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
-        String error = "Invalid Request Error";
-        log.error(error, ex);
-        return buildResponseEntity(new ApiError(BAD_REQUEST, error, ex));
-    }
-
-    @ExceptionHandler(value = {IllegalStateException.class})
-    protected ResponseEntity<Object> handleConflict(IllegalStateException ex) {
-        String error = "Invalid State Error";
-        log.error(error, ex);
-        return buildResponseEntity(new ApiError(CONFLICT, error, ex));
+        String message = messageSource.getMessage("invalid.request.args", null, Locale.getDefault());
+        log.error(message, ex);
+        return buildResponseEntity(new ApiError(BAD_REQUEST, message, ex));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
     protected ResponseEntity<Object> handleEntityNotFound(EntityNotFoundException ex) {
-        String error = "Entity Not Found Error";
-        log.error(error, ex);
-        return buildResponseEntity(new ApiError(NOT_FOUND, error, ex));
+        String message = messageSource.getMessage("entity.not-found", null, Locale.getDefault());
+        log.error(message, ex);
+        return buildResponseEntity(new ApiError(NOT_FOUND, message, ex));
+    }
+
+    @ExceptionHandler(value = {IllegalStateException.class})
+    protected ResponseEntity<Object> handleConflict(IllegalStateException ex) {
+        String message = messageSource.getMessage("invalid.request.state", null, Locale.getDefault());
+        log.error(message, ex);
+        return buildResponseEntity(new ApiError(CONFLICT, message, ex));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     protected ResponseEntity<Object> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         if (ex.getCause() instanceof ConstraintViolationException) {
-            String error = "Database Integrity Error";
-            log.error(error, ex);
-            return buildResponseEntity(new ApiError(HttpStatus.CONFLICT, error, ex.getCause()));
+            String message = messageSource.getMessage("data.integrity.error", null, Locale.getDefault());
+            log.error(message, ex);
+            return buildResponseEntity(new ApiError(HttpStatus.CONFLICT, message, ex.getCause()));
         }
         return handleException(ex);
     }
 
     @ExceptionHandler(value = {Exception.class})
     protected ResponseEntity<Object> handleException(Exception ex) {
-        String error = "General Processing Error";
-        log.error(error, ex);
-        return buildResponseEntity(new ApiError(INTERNAL_SERVER_ERROR, error, ex));
+        String message = messageSource.getMessage("general.error", null, Locale.getDefault());
+        log.error(message, ex);
+        return buildResponseEntity(new ApiError(INTERNAL_SERVER_ERROR, message, ex));
     }
 
     @ExceptionHandler(DataAccessException.class)
     protected ResponseEntity<Object> handleDataAccessViolation(DataAccessException ex) {
-        String error = "Data Access Error";
-        log.error(error, ex);
-        return buildResponseEntity(new ApiError(INTERNAL_SERVER_ERROR, error, ex.getCause()));
+        String message = messageSource.getMessage("data.access.error", null, Locale.getDefault());
+        log.error(message, ex);
+        return buildResponseEntity(new ApiError(INTERNAL_SERVER_ERROR, message, ex.getCause()));
     }
 
-    @Override
-    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
-                                                                  HttpHeaders headers, HttpStatus status,
-                                                                  WebRequest request) {
-        String error = "Malformed JSON Request Error";
-        log.error(error, ex);
-        return buildResponseEntity(new ApiError(HttpStatus.BAD_REQUEST, error, ex));
+    private ResponseEntity<Object> buildResponseEntity(ApiError apiError) {
+        return new ResponseEntity<>(apiError, apiError.getStatus());
     }
 }

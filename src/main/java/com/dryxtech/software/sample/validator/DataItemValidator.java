@@ -10,8 +10,12 @@ import java.util.regex.Pattern;
 @Component
 public class DataItemValidator implements Validator {
 
-    private final Pattern namePattern = Pattern.compile("[a-zA-Z]+");
-    private final Pattern codePattern = Pattern.compile("\\d+");
+    public final int NAME_MIN_SIZE = 2;
+    public final int NAME_MAX_SIZE = 4;
+    public final int CODE_MIN_SIZE = 1;
+    public final int CODE_MAX_SIZE = 10;
+    private final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z]+");
+    private final Pattern CODE_PATTERN = Pattern.compile("\\d+");
 
     @Override
     public boolean supports(Class clazz) {
@@ -26,24 +30,24 @@ public class DataItemValidator implements Validator {
         String name = item.getName().trim();
         String code = item.getCode().trim();
 
-        if (name.length() < 2) {
-            e.rejectValue("name", "", "name must be at least 2 characters long");
-        } else if (name.length() > 4) {
-            e.rejectValue("name", "", "name must be no more than 4 characters long");
+        if (name.length() < NAME_MIN_SIZE) {
+            e.rejectValue("name", "field.min.length", new Object[]{NAME_MIN_SIZE}, "field.min.length violated");
+        } else if (name.length() > NAME_MAX_SIZE) {
+            e.rejectValue("name", "field.max.length", new Object[]{NAME_MAX_SIZE}, "field.max.length violated");
         }
 
-        if (!namePattern.matcher(name).matches()) {
-            e.rejectValue("name", "", "name must be letters only");
+        if (name.length() > 0 && !NAME_PATTERN.matcher(name).matches()) {
+            e.rejectValue("name", "field.content.letters", new Object[]{},"field.content.letters violated");
         }
 
-        if (code.length() < 1) {
-            e.rejectValue("code", "", "code must be at least 1 characters long");
-        } else if (code.length() > 10) {
-            e.rejectValue("code", "", "code must be no more than 10 characters long");
+        if (code.length() < CODE_MIN_SIZE) {
+            e.rejectValue("code", "field.min.length", new Object[]{CODE_MIN_SIZE}, "field.min.length violated");
+        } else if (code.length() > CODE_MAX_SIZE) {
+            e.rejectValue("code", "field.max.length", new Object[]{CODE_MAX_SIZE}, "field.max.length violated");
         }
 
-        if (!codePattern.matcher(code).matches()) {
-            e.rejectValue("code", "", "code must be numeric only");
+        if (code.length() > 0 && !CODE_PATTERN.matcher(code).matches()) {
+            e.rejectValue("code", "field.content.numbers", new Object[]{},"field.content.numbers violated");
         }
     }
 }

@@ -58,7 +58,7 @@ public class RequestService {
 
         recordDataRequest.set(false);
         try {
-            if (!dataRequestRecorder.awaitTermination(3, TimeUnit.SECONDS)) {
+            if (!dataRequestRecorder.awaitTermination(2, TimeUnit.SECONDS)) {
                 dataRequestRecorder.shutdownNow();
             }
         } catch (InterruptedException ex) {
