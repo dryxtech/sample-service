@@ -23,6 +23,7 @@ public class DataRequestDAO {
     public static final String REQUEST_TYPE_COLUMN = "REQUEST_TYPE";
     public static final String REQUEST_START_TS_COLUMN = "REQUEST_START_TS";
     public static final String REQUEST_END_TS_COLUMN = "REQUEST_END_TS";
+    public static final String REQUEST_COUNT_COLUMN = "REQUEST_COUNT";
     public static final String RESPONSE_COUNT_COLUMN = "RESPONSE_COUNT";
     public static final String RESPONSE_STATUS_CODE_COLUMN = "RESPONSE_STATUS_CODE";
 
@@ -36,7 +37,7 @@ public class DataRequestDAO {
 
         String sql = DataUtil.getInsertSql(OPERATION_SCHEMA, REQUEST_HISTORY_TABLE, REQUEST_GUID_COLUMN,
                 REQUEST_ORGANIZATION_COLUMN, REQUEST_USER_COLUMN, REQUEST_TYPE_COLUMN, REQUEST_START_TS_COLUMN,
-                REQUEST_END_TS_COLUMN, RESPONSE_COUNT_COLUMN, RESPONSE_STATUS_CODE_COLUMN);
+                REQUEST_END_TS_COLUMN, REQUEST_COUNT_COLUMN, RESPONSE_COUNT_COLUMN, RESPONSE_STATUS_CODE_COLUMN);
 
         log.debug("recording data request {} using sql {}", dataRequest, sql);
 
@@ -49,6 +50,7 @@ public class DataRequestDAO {
             ps.setString(++index, dataRequest.getType());
             ps.setTimestamp(++index, Timestamp.valueOf(dataRequest.getStartTime()));
             ps.setTimestamp(++index, Timestamp.valueOf(dataRequest.getEndTime()));
+            ps.setInt(++index, dataRequest.getSearchCriteria().size());
             ps.setInt(++index, dataRequest.getResponseCount());
             ps.setInt(++index, dataRequest.getResponseStatusCode());
             return ps;

@@ -8,14 +8,17 @@ import org.springframework.stereotype.Service;
 @PropertySource("classpath:build.properties")
 public class SystemService {
 
-    @Value("${application-name}")
-    private String applicationName;
+    private final String applicationName;
+    private final String applicationDescription;
+    private final String applicationVersion;
 
-    @Value("${application-description}")
-    private String applicationDescription;
-
-    @Value("${application-version}")
-    private String applicationVersion;
+    public SystemService(@Value("${application-name}") String applicationName,
+                         @Value("${application-description}") String applicationDescription,
+                         @Value("${application-version}") String applicationVersion) {
+        this.applicationName = applicationName;
+        this.applicationDescription = applicationDescription;
+        this.applicationVersion = applicationVersion;
+    }
 
     public String getApplicationName() {
         return applicationName;

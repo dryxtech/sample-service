@@ -54,7 +54,7 @@ public final class DataItemUtil {
                 Assert.isTrue(startRange <= endRange, "range start value greater than end value in: " + range);
 
                 int totalCount = dataItems.size() + (endRange - startRange);
-                Assert.isTrue(totalCount <= maxSizeAllowed, "max allowed size exceeded " + maxSizeAllowed);
+                Assert.isTrue(totalCount < maxSizeAllowed, "max allowed size exceeded " + maxSizeAllowed);
 
                 fill(dataItems, start.getName(), startRange, endRange);
 

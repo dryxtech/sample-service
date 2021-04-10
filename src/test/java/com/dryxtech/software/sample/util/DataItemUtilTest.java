@@ -56,6 +56,26 @@ class DataItemUtilTest {
     }
 
     @Test
+    void convert_invalidSingle() {
+        assertThrows(IllegalArgumentException.class, () -> DataItemUtil.convert("ABC1-DEF3", 3));
+    }
+
+    @Test
+    void convert_tooManyHyphens() {
+        assertThrows(IllegalArgumentException.class, () -> DataItemUtil.convert("ABC1-3-3", 3));
+    }
+
+    @Test
+    void convert_startGreaterThanEnd() {
+        assertThrows(IllegalArgumentException.class, () -> DataItemUtil.convert("ABC3-1", 3));
+    }
+
+    @Test
+    void convert_tooManyItems() {
+        assertThrows(IllegalArgumentException.class, () -> DataItemUtil.convert("ABC1-4", 3));
+    }
+
+    @Test
     void fill() {
         List<DataItem> list = new ArrayList<>();
         DataItemUtil.fill(list, "TEST", 1, 2);
