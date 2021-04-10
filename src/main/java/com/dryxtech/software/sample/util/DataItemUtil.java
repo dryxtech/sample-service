@@ -3,6 +3,7 @@ package com.dryxtech.software.sample.util;
 import com.dryxtech.software.sample.model.DataItem;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,10 +51,10 @@ public final class DataItemUtil {
 
                 int startRange = Integer.parseInt(start.getCode());
                 int endRange = Integer.parseInt(end.getCode());
-                checkForIllegalArgument(startRange > endRange, "range start value greater than end value in: " + range);
+                Assert.isTrue(startRange <= endRange, "range start value greater than end value in: " + range);
 
                 int totalCount = dataItems.size() + (endRange - startRange);
-                checkForIllegalArgument(totalCount > maxSizeAllowed, "max allowed size exceeded " + maxSizeAllowed);
+                Assert.isTrue(totalCount <= maxSizeAllowed, "max allowed size exceeded " + maxSizeAllowed);
 
                 fill(dataItems, start.getName(), startRange, endRange);
 
@@ -87,11 +88,5 @@ public final class DataItemUtil {
         }
 
         return new DataItem(dataItemStr.substring(0, codeStartIndex).toUpperCase(), dataItemStr.substring(codeStartIndex));
-    }
-
-    static void checkForIllegalArgument(boolean illegal, String message) {
-        if (illegal) {
-            throw new IllegalArgumentException(message);
-        }
     }
 }
