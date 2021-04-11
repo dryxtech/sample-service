@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,6 +29,7 @@ import java.util.Objects;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -111,6 +113,13 @@ public class ControllerExceptionAdvice extends ResponseEntityExceptionHandler {
             return buildResponseEntity(new ApiError(HttpStatus.CONFLICT, message, ex.getCause()));
         }
         return handleException(ex);
+    }
+
+    @ExceptionHandler(value = {AccessDeniedException.class})
+    protected ResponseEntity<Object> handleException(AccessDeniedException ex) {
+        String message = messageSource.getMessage("access.denied.error", null, Locale.getDefault());
+        log.warn(message);
+        return buildResponseEntity(new ApiError(FORBIDDEN, message, ex));
     }
 
     @ExceptionHandler(value = {Exception.class})

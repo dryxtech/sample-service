@@ -13,6 +13,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -32,8 +34,7 @@ import java.util.Map;
 @RequestMapping("/api/data")
 public class DataController {
 
-    private static final String DEFAULT_ORG = "anonymous";
-    private static final String DEFAULT_USER = "anonymous";
+    private static final String DEFAULT_ORG = "SAMPLE_ORG";
     private static final String DEFAULT_DATA_ITEM_LIMIT = "3";
 
     private final DataService dataService;
@@ -44,32 +45,35 @@ public class DataController {
         this.eventPublisher = eventPublisher;
     }
 
+    @PreAuthorize("hasPermission(#organization, '*')")
     @GetMapping(value = "search")
-    public ResponseEntity<Object> searchDataFacts(@RequestParam String searchCriteria,
+    public ResponseEntity<Object> searchDataFacts(Principal principal,
                                                   @RequestParam(defaultValue = DEFAULT_ORG) String organization,
-                                                  @RequestParam(defaultValue = DEFAULT_USER) String user,
+                                                  @RequestParam String searchCriteria,
                                                   @RequestParam(defaultValue = DEFAULT_DATA_ITEM_LIMIT) int itemLimit) {
         List<DataItem> searchDataItems;
         try {
             searchDataItems = DataItemUtil.convert(searchCriteria, DataService.MAX_REQUEST_ITEMS);
         } catch (IllegalArgumentException ex) {
-            eventPublisher.publishEvent(new DataRequestEvent(new DataRequest<>(organization, user,
-                    DataFact.class.getSimpleName(), HttpStatus.BAD_REQUEST.value())));
+            eventPublisher.publishEvent(new DataRequestEvent(new DataRequest<DataItem>(organization,
+                    principal.toString(), DataFact.class.getSimpleName(),
+                    HttpStatus.BAD_REQUEST.value())));
             throw new InvalidSearchException("invalid search criteria string: " + searchCriteria,
                     Collections.singletonMap("searchCriteria", searchCriteria), ex);
         }
 
-        return searchDataFacts(searchDataItems, organization, user, itemLimit);
+        return searchDataFacts(principal, organization, searchDataItems, itemLimit);
     }
 
+    @PreAuthorize("hasPermission(#organization, '*')")
     @PostMapping(value = "search")
-    public ResponseEntity<Object> searchDataFacts(@RequestBody List<DataItem> searchDataItems,
+    public ResponseEntity<Object> searchDataFacts(Principal principal,
                                                   @RequestParam(defaultValue = DEFAULT_ORG) String organization,
-                                                  @RequestParam(defaultValue = DEFAULT_USER) String user,
+                                                  @RequestBody List<DataItem> searchDataItems,
                                                   @RequestParam(defaultValue = DEFAULT_DATA_ITEM_LIMIT) int itemLimit) {
 
-        DataRequest<DataItem> dataRequest = new DataRequest<>(organization, user, DataFact.class.getSimpleName(),
-                HttpStatus.OK.value());
+        DataRequest<DataItem> dataRequest = new DataRequest<DataItem>(organization,
+                principal.toString(), DataFact.class.getSimpleName(), HttpStatus.OK.value());
         dataRequest.setSearchCriteria(searchDataItems);
         dataRequest.setLimit(itemLimit);
 

@@ -21,7 +21,7 @@ public class ContextualRuntimeException extends RuntimeException {
     }
 
     public String getMessageWithContext() {
-        return getContext().map(map -> getMessage() + " context: " + map.toString())
+        return getContext().map(map -> getMessage() + " [context " + map + "]")
                 .orElseGet(this::getMessage);
     }
 
