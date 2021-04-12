@@ -2,7 +2,7 @@
 
 <configuration>
 
-    <property resource="application.properties" />
+    <property resource="application.yml" />
 
     <springProfile name="dev | tst | prd">
 

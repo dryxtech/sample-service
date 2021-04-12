@@ -56,7 +56,7 @@ public class DataController {
             searchDataItems = DataItemUtil.convert(searchCriteria, DataService.MAX_REQUEST_ITEMS);
         } catch (IllegalArgumentException ex) {
             eventPublisher.publishEvent(new DataRequestEvent(new DataRequest<DataItem>(organization,
-                    principal.toString(), DataFact.class.getSimpleName(),
+                    principal.getName(), DataFact.class.getSimpleName(),
                     HttpStatus.BAD_REQUEST.value())));
             throw new InvalidSearchException("invalid search criteria string: " + searchCriteria,
                     Collections.singletonMap("searchCriteria", searchCriteria), ex);
@@ -72,8 +72,8 @@ public class DataController {
                                                   @RequestBody List<DataItem> searchDataItems,
                                                   @RequestParam(defaultValue = DEFAULT_DATA_ITEM_LIMIT) int itemLimit) {
 
-        DataRequest<DataItem> dataRequest = new DataRequest<DataItem>(organization,
-                principal.toString(), DataFact.class.getSimpleName(), HttpStatus.OK.value());
+        DataRequest<DataItem> dataRequest = new DataRequest<>(organization,
+                principal.getName(), DataFact.class.getSimpleName(), HttpStatus.OK.value());
         dataRequest.setSearchCriteria(searchDataItems);
         dataRequest.setLimit(itemLimit);
 

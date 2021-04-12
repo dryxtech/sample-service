@@ -1,0 +1,72 @@
+info:
+    app:
+        description: '@project.description@'
+        name: '@project.name@'
+        version: '@project.version@'
+management:
+    endpoint:
+        health:
+            show-details: always
+    endpoints:
+        web:
+            exposure:
+                include: '*'
+    server:
+        port: 8081
+sample:
+    request:
+        record:
+            queue:
+                capacity: 1000
+spring:
+    autoconfigure:
+        exclude: org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+    datasource:
+        initialization-mode: always
+    dw:
+        datasource:
+            auto-commit: false
+            connection-timeout: 60000
+            driver-class-name: org.h2.Driver
+            jdbc-url: jdbc:h2:mem:dwdb;DB_CLOSE_DELAY=-1
+            login-timeout: 60000
+            maximum-pool-size: 10
+            minimum-idle: 1
+            password: sample
+            pool-name: dw-database-pool
+            username: sample
+    flyway:
+        default-schema: SAMPLE
+        password: sample
+        schemas: SAMPLE
+        url: jdbc:h2:mem:opdb;DB_CLOSE_DELAY=-1
+        user: sample
+    h2:
+        console:
+            enabled: true
+    jackson:
+        default-property-inclusion: NON_NULL
+    jpa:
+        database-platform: org.hibernate.dialect.H2Dialect
+        properties:
+            javax:
+                persistence:
+                    validation:
+                        mode: none
+        show-sql: false
+    op:
+        datasource:
+            auto-commit: true
+            connection-timeout: 60000
+            driver-class-name: org.h2.Driver
+            jdbc-url: jdbc:h2:mem:opdb;DB_CLOSE_DELAY=-1
+            login-timeout: 60000
+            maximum-pool-size: 10
+            minimum-idle: 1
+            password: sample
+            pool-name: op-database-pool
+            username: sample
+springdoc:
+    api-docs:
+        enabled: true
+        path: /api-docs

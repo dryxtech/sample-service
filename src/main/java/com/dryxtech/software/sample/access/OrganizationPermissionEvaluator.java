@@ -1,5 +1,6 @@
 package com.dryxtech.software.sample.access;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -7,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import java.io.Serializable;
 import java.util.Objects;
 
+@Slf4j
 public class OrganizationPermissionEvaluator implements PermissionEvaluator {
 
     @Override
@@ -29,12 +31,16 @@ public class OrganizationPermissionEvaluator implements PermissionEvaluator {
         }
 
         String perm = ((String) permission).toUpperCase();
+        String org = orgId.toString().trim().toUpperCase();
         for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
             String role = grantedAuth.getAuthority().trim().toUpperCase();
-            if (("*".equals(perm) || role.startsWith(perm)) && role.endsWith("=" + orgId)) {
+            if (("*".equals(perm) || role.startsWith(perm + "=")) && (role.endsWith("=" + org) || "*".equals(org))) {
                 return true;
             }
         }
+
+        log.debug("user {} does not have permission={} to organization={}; user roles={}",
+                auth.getPrincipal().toString(), perm, org, auth.getAuthorities());
 
         return false;
     }
